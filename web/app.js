@@ -1601,6 +1601,12 @@ function webViewerInitialized() {
 
   Promise.all(waitForBeforeOpening).then(function () {
     webViewerOpenFileViaURL(file);
+    if (pdfMonitor) {
+      pdfMonitor.log({
+        event: "open",
+        file: file
+      });
+    }
   }).catch(function (reason) {
     PDFViewerApplication.l10n.get('loading_error', null,
         'An error occurred while opening.').then((msg) => {
@@ -1920,6 +1926,12 @@ function webViewerDocumentProperties() {
 }
 
 function webViewerFind(evt) {
+  if (pdfMonitor) {
+    pdfMonitor.log({
+      event: "find",
+      query: evt.query
+    })
+  }
   PDFViewerApplication.findController.executeCommand('find' + evt.type, {
     query: evt.query,
     phraseSearch: evt.phraseSearch,
@@ -1961,6 +1973,13 @@ function webViewerPageChanging(evt) {
 
   if (PDFViewerApplication.pdfSidebar.isThumbnailViewVisible) {
     PDFViewerApplication.pdfThumbnailViewer.scrollThumbnailIntoView(page);
+  }
+
+  if (pdfMonitor) {
+    pdfMonitor.log({
+      event: "pageChanging",
+      pageNumber: page
+    })
   }
 
   // we need to update stats

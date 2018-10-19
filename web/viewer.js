@@ -18,8 +18,7 @@
 
 const url = require('url');
 
-let DEFAULT_URL = url.resolve(window.location.href, 'compressed.tracemonkey-pldi-09.pdf');
-pdfMonitor.log("DEFAULT_URL: " + DEFAULT_URL);
+let DEFAULT_URL = url.resolve(window.location.href, '../../src/sample.pdf');
 
 if (typeof PDFJSDev !== 'undefined' && PDFJSDev.test('CHROME')) {
   (function rewriteUrlClosure() {
