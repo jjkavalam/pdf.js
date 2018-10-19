@@ -44,6 +44,11 @@ import { SecondaryToolbar } from './secondary_toolbar';
 import { Toolbar } from './toolbar';
 import { ViewHistory } from './view_history';
 
+let fileUrl;
+if (pdfMonitor) {
+  fileUrl = require('file-url');
+}
+
 const DEFAULT_SCALE_DELTA = 1.1;
 const DISABLE_AUTO_FETCH_LOADING_BAR_TIMEOUT = 5000;
 
@@ -1601,6 +1606,12 @@ function webViewerInitialized() {
 
   Promise.all(waitForBeforeOpening).then(function () {
     webViewerOpenFileViaURL(file);
+    if (pdfMonitor) {
+      pdfMonitor.log({
+        event: "open",
+        file: file
+      });
+    }
   }).catch(function (reason) {
     PDFViewerApplication.l10n.get('loading_error', null,
         'An error occurred while opening.').then((msg) => {
@@ -1833,6 +1844,12 @@ if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
   webViewerFileInputChange = function webViewerFileInputChange(evt) {
     let file = evt.fileInput.files[0];
 
+    if (pdfMonitor) {
+      window.location = "#" + fileUrl(file.path);
+      window.location.reload();
+      return;
+    }
+
     if (!PDFJS.disableCreateObjectURL && URL.createObjectURL) {
       PDFViewerApplication.open(URL.createObjectURL(file));
     } else {
@@ -1920,6 +1937,12 @@ function webViewerDocumentProperties() {
 }
 
 function webViewerFind(evt) {
+  if (pdfMonitor) {
+    pdfMonitor.log({
+      event: "find",
+      query: evt.query
+    })
+  }
   PDFViewerApplication.findController.executeCommand('find' + evt.type, {
     query: evt.query,
     phraseSearch: evt.phraseSearch,
@@ -1961,6 +1984,13 @@ function webViewerPageChanging(evt) {
 
   if (PDFViewerApplication.pdfSidebar.isThumbnailViewVisible) {
     PDFViewerApplication.pdfThumbnailViewer.scrollThumbnailIntoView(page);
+  }
+
+  if (pdfMonitor) {
+    pdfMonitor.log({
+      event: "pageChanging",
+      pageNumber: page
+    })
   }
 
   // we need to update stats
