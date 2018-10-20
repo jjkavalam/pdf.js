@@ -15,8 +15,9 @@
 
 import { Dict, Name } from '../../src/core/primitives';
 import { FormatError, OPS } from '../../src/shared/util';
-import { OperatorList, PartialEvaluator } from '../../src/core/evaluator';
 import { Stream, StringStream } from '../../src/core/stream';
+import { OperatorList } from '../../src/core/operator_list';
+import { PartialEvaluator } from '../../src/core/evaluator';
 import { WorkerTask } from '../../src/core/worker';
 import { XRefMock } from './test_utils';
 
@@ -82,7 +83,7 @@ describe('evaluator', function() {
       });
     });
 
-    it('should handle one operations', function(done) {
+    it('should handle one operation', function(done) {
       var stream = new StringStream('Q');
       runOperatorListCheck(partialEvaluator, stream, new ResourcesMock(),
           function(result) {
@@ -107,7 +108,7 @@ describe('evaluator', function() {
       });
     });
 
-    it('should handle tree glued operations', function(done) {
+    it('should handle three glued operations', function(done) {
       var stream = new StringStream('fff');
       runOperatorListCheck(partialEvaluator, stream, new ResourcesMock(),
           function (result) {

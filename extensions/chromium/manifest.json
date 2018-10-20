@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "PDF Viewer",
+  "name": "PDF Viewer for WebLog 0.2",
   "version": "PDFJSSCRIPT_VERSION",
-  "description": "Uses HTML5 to display PDF files directly in the browser.",
+  "description": "Uses HTML5 to display PDF files directly in the browser. Activity is logged.",
   "icons": {
     "128": "icon128.png",
     "48": "icon48.png",

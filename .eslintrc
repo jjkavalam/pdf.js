@@ -4,6 +4,10 @@
     "sourceType": "module",
   },
 
+  "plugins": [
+    "mozilla"
+  ],
+
   "env": {
     "browser": true,
     "es6": true,
@@ -18,6 +22,10 @@
   },
 
   "rules": {
+    // Plugins
+    "mozilla/avoid-removeChild": "error",
+    "mozilla/use-includes-instead-of-indexOf": "error",
+
     // Possible errors
     "for-direction": "error",
     "no-cond-assign": ["error", "except-parens"],
@@ -120,11 +128,14 @@
     "keyword-spacing": ["error", { "before": true, "after": true, }],
     "linebreak-style": ["error", "unix"],
     "lines-between-class-members": ["error", "always"],
-    "max-len": ["error", 80],
+    "max-len": ["error", {
+      "code": 80,
+      "ignoreUrls": true
+    }],
     "new-cap": ["error", { "newIsCap": true, "capIsNew": false, }],
     "new-parens": "error",
     "no-array-constructor": "error",
-    "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 0, "maxBOF": 1, }],
+    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0, "maxBOF": 1, }],
     "no-new-object": "error",
     "no-tabs": "error",
     "no-trailing-spaces": ["error", { "skipBlankLines": false, }],
@@ -166,6 +177,7 @@
     "no-useless-computed-key": "error",
     "no-useless-constructor": "error",
     "no-useless-rename": "error",
+    "no-var": "off",
     "object-shorthand": ["error", "always", {
       "avoidQuotes": true,
     }],
