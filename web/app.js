@@ -2026,6 +2026,7 @@ function webViewerDocumentProperties() {
 }
 
 let postFindEvent = debounce(function(evt) {
+  if (evt.query.length === 0) return;
   monitorLog({
     event: "find",
     query: evt.query

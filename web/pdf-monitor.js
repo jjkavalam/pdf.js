@@ -1,7 +1,7 @@
 let ENDPOINT = "http://localhost:5000/event"
 	
 function postToServer(obj) {
-    const rawResponsePromise = fetch(ENDPOINT, {
+    fetch(ENDPOINT, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -9,12 +9,6 @@ function postToServer(obj) {
         },
         body: JSON.stringify(obj)
     });
-    rawResponsePromise.then(function(rawResponse) {
-        const contentPromise = rawResponse.json();
-        contentPromise.then(function(content) {
-            console.log(content);
-        })
-    })
 }
 
 function monitorLog(data) {
@@ -24,31 +18,12 @@ function monitorLog(data) {
         time: new Date(),
         data
     };
-    console.log(logItem);
     postToServer(logItem);
 }
 
-function onSelect() {
-    // is this selection within the textLayer
-    let sel = window.getSelection();
-    if (sel.toString().length === 0) return;
-    let el = sel.focusNode;
-    let validSelection = false;
-    while (el) {
-        if (el.classList && el.classList.contains("textLayer")) {
-            validSelection = true;
-            break;
-        }
-        el = el.parentElement;
-    }
-    if (validSelection) {
-        monitorLog({
-            event: "selectionChange",
-            selection: window.getSelection().toString()
-        })
-    }
-}
-
+/**
+ * This logic is used for search query debounce
+ */
 function debounce(f){
 
     // --- debounce logic ---
@@ -76,18 +51,82 @@ function debounce(f){
             else {
                 scheduleRun();
             }
-        }, 300);
+        }, 750);
     }
 
     return debouncedHandler;
 
 }
 
-// debounced onSelectionChange
-document.onselectionchange = debounce(onSelect);
-console.log("Setup selection event listener on " + window.location.href);
-
 export {
     monitorLog,
     debounce
 }
+
+
+(function(){
+
+	/**
+	 * Listen on selections on the page debounced and send selection to background script
+	 * 
+	 * Debounce logic:
+	 * every new event is allowed to update 'selection' if it's non-empty
+	 * logic guarantees that onSelect will be run latest within ~750ms if no new event comes
+	 * if a new event indeed comes, the firing of onSelect is deferred untils events settle 
+	 * 
+	 * This means that the selection is committed after it is held steady. An edge case is when
+	 * the selection is immediately cleared; in this scenario nothing get's posted to the server. 
+	 */
+    function onSelect() {
+        // is this selection within the textLayer
+        let sel = window.getSelection();
+        if (sel.toString().length === 0) return;
+        let el = sel.focusNode;
+        let validSelection = false;
+        while (el) {
+            if (el.classList && el.classList.contains("textLayer")) {
+                validSelection = true;
+                break;
+            }
+            el = el.parentElement;
+        }
+        if (validSelection) {
+            monitorLog({
+                event: "selectionChange",
+                selection: window.getSelection().toString()
+            })
+        }
+        selection = '';
+    }
+    
+	let count = 0;
+	let scheduledAt = 0;
+	let selection = '';
+
+	function debouncedHandler() {
+		let newSelection = window.getSelection().toString();
+
+		count++;
+		selection = newSelection;
+		if (scheduledAt === 0) {
+			scheduleRun();
+		}
+	}
+
+	function scheduleRun() {
+		scheduledAt = count;
+		setTimeout(() => {
+			if (scheduledAt === count) {
+				onSelect();
+				count = 0;
+				scheduledAt = 0;
+			}
+			else {
+				scheduleRun();
+			}
+		}, 750);
+	}
+
+	// debounced onSelectionChange
+	document.onselectionchange = debouncedHandler;
+})();
