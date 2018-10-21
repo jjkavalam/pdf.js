@@ -24,7 +24,9 @@ function monitorLog(data) {
 /**
  * This logic is used for search query debounce
  */
-function debounce(f){
+function debounce(f, t){
+
+    t = t || 1500;
 
     // --- debounce logic ---
     let count = 0;
@@ -33,7 +35,7 @@ function debounce(f){
 
     function debouncedHandler() {
         count++;
-        args = new Array(...arguments);
+        args = [...arguments];
         if (scheduledAt === 0) {
             scheduleRun();
         }
@@ -51,7 +53,7 @@ function debounce(f){
             else {
                 scheduleRun();
             }
-        }, 750);
+        }, t);
     }
 
     return debouncedHandler;
@@ -124,9 +126,22 @@ export {
 			else {
 				scheduleRun();
 			}
-		}, 750);
+		}, 1500);
 	}
 
 	// debounced onSelectionChange
 	document.onselectionchange = debouncedHandler;
 })();
+
+var commandListener = function(command) {
+	if (command === 'note-prompt') {
+        var text = window.prompt("Note ?");
+        if (text) {
+            monitorLog({
+                event: "note",
+                text
+            })
+        }
+	}
+};
+chrome.commands.onCommand.addListener(commandListener);

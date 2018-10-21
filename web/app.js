@@ -2068,6 +2068,13 @@ function webViewerRotationChanging(evt) {
   PDFViewerApplication.pdfViewer.currentPageNumber = evt.pageNumber;
 }
 
+var debouncedPageChangeHandler = debounce(function(page) {
+  monitorLog({
+    event: "pageChanging",
+    pageNumber: page
+  });
+}, 3000);
+
 function webViewerPageChanging(evt) {
   let page = evt.pageNumber;
 
@@ -2078,12 +2085,9 @@ function webViewerPageChanging(evt) {
     PDFViewerApplication.pdfThumbnailViewer.scrollThumbnailIntoView(page);
   }
 
-  monitorLog({
-    event: "pageChanging",
-    pageNumber: page
-  })
+  debouncedPageChangeHandler(page);
 
-    // We need to update stats.
+  // We need to update stats.
   if (typeof Stats !== 'undefined' && Stats.enabled) {
     let pageView = PDFViewerApplication.pdfViewer.getPageView(page - 1);
     if (pageView && pageView.stats) {

@@ -67,5 +67,14 @@
     "data:*",
     "filesystem:/*",
     "drive:*"
-  ]
+  ],
+  "commands": {
+    "note-prompt": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Write a note in pdf"
+    }    
+  }    
 }
