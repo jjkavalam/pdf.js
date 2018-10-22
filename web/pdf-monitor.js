@@ -1,24 +1,39 @@
-let ENDPOINT = "http://localhost:5000/event"
-	
-function postToServer(obj) {
-    fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(obj)
-    });
+var BASE_URL = 'http://127.0.0.1:5000';
+
+function postToServer(endPoint, data) {
+	return fetch(BASE_URL + endPoint, {
+		method: 'POST',
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(data)
+	});
 }
 
-function monitorLog(data) {
-    let logItem = {
+function itemId() {
+    return (new Date().getTime()) + '-' + Math.ceil(Math.random()*10000);
+}
+var itemId = itemId();
+
+function newLogItem(data) {
+    return {
         type: "pdf",
+        itemId,
         href: window.location.href,
         time: new Date(),
         data
     };
-    postToServer(logItem);
+}
+
+function monitorLog(data) {
+    if (data instanceof Array) {
+        let logItems = data.map(x => newLogItem(x));
+        postToServer('/events', logItems);
+    }
+    else {
+        postToServer('/event', newLogItem(data));
+    }
 }
 
 /**
@@ -58,11 +73,6 @@ function debounce(f, t){
 
     return debouncedHandler;
 
-}
-
-export {
-    monitorLog,
-    debounce
 }
 
 
@@ -145,3 +155,57 @@ var commandListener = function(command) {
 	}
 };
 chrome.commands.onCommand.addListener(commandListener);
+
+var focusCountsMap = new Map();
+
+function tickFn() {
+
+    try {
+        var currentPage = PDFViewerApplication.page;
+
+        if (document.hasFocus() && typeof currentPage === "number") {
+            var item = focusCountsMap.get(currentPage) || { count: 0 };
+            focusCountsMap.set(currentPage, { count: item.count + 1, dirty: true });
+            hasChanged = true;
+        }
+    }
+    // sometimes PDFViewerApplication is not just ready
+    catch(e) {
+        console.warn(e);
+    }
+
+    setTimeout(tickFn, 1000);
+}
+tickFn();
+
+var LOG_INTERVAL = 60 * 1000;
+var hasChanged = false;
+function logFn() {
+
+    if (hasChanged) {
+        hasChanged = false;
+        let data = [];
+        for (let [key, value] of focusCountsMap) {
+            if (value.dirty) {
+                if (value.count > 3) {
+                    data.push({
+                        event: "focus-count",
+                        page: key,
+                        count: value.count
+                    });
+                }
+                value.dirty = false;
+            }
+        }
+        monitorLog(data);
+    }
+
+    setTimeout(logFn, LOG_INTERVAL);
+}
+logFn();
+
+export {
+    monitorLog,
+    debounce
+}
+
